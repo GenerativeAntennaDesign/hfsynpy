@@ -7,6 +7,10 @@ setup(
     author="Dominik Mair",
     author_email="dominik.mair@uibk.ac.at",
     url="https://github.com/GenerativeAntennaDesign/hfsynpy",
+    project_urls={
+        "Documentation": "https://generativeantennadesign.github.io/hfsynpy/",
+        "Source": "https://github.com/GenerativeAntennaDesign/hfsynpy",
+    },
     packages=find_packages(where="."),
     install_requires=[
         # No external dependencies required
