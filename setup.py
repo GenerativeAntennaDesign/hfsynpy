@@ -6,12 +6,14 @@ setup(
     description="A Python library for synthesis and analysis of high frequency component (currently only microstrip transmission lines), providing accurate models and convenient tools for PCB and RF design.",
     author="Dominik Mair",
     author_email="dominik.mair@uibk.ac.at",
-    url="https://github.com/YourUsername/hfsynpy",
-    packages=find_packages(),
+    url="https://github.com/GenerativeAntennaDesign/hfsynpy",
+    packages=find_packages(where="."),
     install_requires=[
         # No external dependencies required
     ],
     classifiers=[
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Science/Research",
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",

@@ -1,3 +1,25 @@
+# This file is part of a Python translation of KiCad's C++ source code.
+
+# Original C++ code:
+# - © 2001 Gopal Narayanan <gopal@astro.umass.edu>
+# - © 2002 Claudio Girardi <claudio.girardi@ieee.org>
+# - © 2005, 2006 Stefan Jahn <stefan@lkcc.org>
+# - Modified for KiCad: 2018 Jean-Pierre Charras <jp.charras at wanadoo.fr>
+# - © The KiCad Developers, see AUTHORS.txt for contributors.
+
+# Python translation and modifications:
+# - © 2025 Dominik Mair <dominik.mair@uibk.ac.at>
+
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
 from dataclasses import dataclass, field
 import math
 
@@ -36,12 +58,36 @@ class Microstrip:
     | atten_cond   | float  | dB/m          | Conductor attenuation per meter.                                 |
     | atten_diel   | float  | dB/m          | Dielectric attenuation per meter.                                |
 
+
+    **Attribution**
+    This file is part of a Python translation of KiCad's C++ source code.
+
+    Original C++ code:
+    - © 2001 Gopal Narayanan <gopal@astro.umass.edu>
+    - © 2002 Claudio Girardi <claudio.girardi@ieee.org>
+    - © 2005, 2006 Stefan Jahn <stefan@lkcc.org>
+    - Modified for KiCad: 2018 Jean-Pierre Charras <jp.charras at wanadoo.fr>
+    - © The KiCad Developers, see AUTHORS.txt for contributors.
+
+    Python translation and modifications:
+    - © 2025 Dominik Mair <dominik.mair@uibk.ac.at>
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation; either version 2
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
     """
 
     # Physical constants
-    MU0: float = 12.566370614e-7  # Permeability of free space (H/m)
-    C0: float = 299792458.0  # Speed of light in vacuum (m/s)
-    ZF0: float = 376.730313668  # Impedance of free space (ohms)
+    _MU0: float = 12.566370614e-7  # Permeability of free space (H/m)
+    _C0: float = 299792458.0  # Speed of light in vacuum (m/s)
+    _ZF0: float = 376.730313668  # Impedance of free space (ohms)
 
     eps_r: float = 1.0
     tand: float = 0.0
@@ -135,7 +181,7 @@ class Microstrip:
         if u <= 0:
             return float("inf")
         freq_term = 6.0 + (2.0 * math.pi - 6.0) * math.exp(-pow(30.666 / u, 0.7528))
-        return (Microstrip.ZF0 / (2.0 * math.pi)) * math.log(
+        return (Microstrip._ZF0 / (2.0 * math.pi)) * math.log(
             freq_term / u + math.sqrt(1.0 + 4.0 / (u * u))
         )
 
@@ -193,10 +239,10 @@ class Microstrip:
         Z0 = self.z0_target
         if Z0 == 0:
             return 0.0
-        a = (Z0 / self.ZF0) / (2 * math.pi) * math.sqrt((e_r + 1) / 2.0) + (
+        a = (Z0 / self._ZF0) / (2 * math.pi) * math.sqrt((e_r + 1) / 2.0) + (
             (e_r - 1) / (e_r + 1)
         ) * (0.23 + (0.11 / e_r))
-        b = (self.ZF0 / 2) * math.pi / (Z0 * math.sqrt(e_r))
+        b = (self._ZF0 / 2) * math.pi / (Z0 * math.sqrt(e_r))
         if a > 1.52:
             w_h = 8.0 * math.exp(a) / (math.exp(2.0 * a) - 2.0)
         else:
@@ -259,7 +305,7 @@ class Microstrip:
         D = self._Z0_dispersion(u, e_r, e_r_eff_0, e_r_eff_f, f_n)
         Z0_f = self.Z0_0 * D
 
-        self.prop_delay = math.sqrt(e_r_eff_f) * (1.0e10 / self.C0)
+        self.prop_delay = math.sqrt(e_r_eff_f) * (1.0e10 / self._C0)
         self.epsilon_eff = e_r_eff_f
         self.z0_target = Z0_f
 
@@ -267,7 +313,7 @@ class Microstrip:
         # Skin depth (m)
         if self.frequency > 0:
             depth = 1.0 / math.sqrt(
-                math.pi * self.frequency * (self.murc * Microstrip.MU0) * self.sigma
+                math.pi * self.frequency * (self.murc * Microstrip._MU0) * self.sigma
             )
         else:
             depth = 0.0
@@ -281,14 +327,14 @@ class Microstrip:
         delta = depth  # skin depth
         Rs = 1.0 / (self.sigma * delta) if delta > 0 else float("inf")
         Rs *= 1.0 + (2.0 / math.pi) * math.atan(1.40 * pow(self.rough / delta, 2.0))
-        K = math.exp(-1.2 * pow(Z0_h_1 / self.ZF0, 0.7))
+        K = math.exp(-1.2 * pow(Z0_h_1 / self._ZF0, 0.7))
         if freq > 0 and width > 0 and Z0_h_1 > 0:
-            Q_c = (math.pi * Z0_h_1 * width * freq) / (Rs * self.C0 * K)
+            Q_c = (math.pi * Z0_h_1 * width * freq) / (Rs * self._C0 * K)
             alpha_c = (
                 (20.0 * math.pi / math.log(10.0))
                 * freq
                 * math.sqrt(e_r_eff_0)
-                / (self.C0 * Q_c)
+                / (self._C0 * Q_c)
             )
         else:
             alpha_c = 0.0
@@ -300,7 +346,7 @@ class Microstrip:
         if eps_eff_0 != 0 and (e_r - 1.0) != 0:
             alpha_d = (
                 (20 * math.pi / math.log(10))
-                * (self.frequency / Microstrip.C0)
+                * (self.frequency / Microstrip._C0)
                 * (e_r / math.sqrt(eps_eff_0))
                 * ((eps_eff_0 - 1.0) / (e_r - 1.0))
                 * self.tand
@@ -312,7 +358,7 @@ class Microstrip:
     def _line_angle(self):
         if self.epsilon_eff is None or self.epsilon_eff <= 0 or self.mur_eff is None:
             return
-        v = Microstrip.C0 / math.sqrt(self.epsilon_eff * self.mur_eff)
+        v = Microstrip._C0 / math.sqrt(self.epsilon_eff * self.mur_eff)
         lambda_g = v / self.frequency
         ang = 2.0 * math.pi * (self.params["PHYS_LEN"] / lambda_g)
         # If you want to store ang, you can add: self.ang_l_target = ang
@@ -327,7 +373,7 @@ class Microstrip:
         if not math.isfinite(w) or w == 0.0:
             w = 0.001
         self.params["PHYS_WIDTH"] = w
-        self.Analyse()
+        self.Analyze()
         Z0_current = self.z0_target
         error = abs(z0_dest - Z0_current)
 
@@ -338,14 +384,14 @@ class Microstrip:
             increment = w / 100.0
             w += increment
             self.params["PHYS_WIDTH"] = w
-            self.Analyse()
+            self.Analyze()
             Z0_new = self.z0_target
             slope = (Z0_new - Z0_current) / increment if increment != 0 else 0
             slope = (z0_dest - Z0_current) / slope - increment
             w += slope
 
             self.params["PHYS_WIDTH"] = w
-            self.Analyse()
+            self.Analyze()
             Z0_current = self.z0_target
             error = abs(z0_dest - Z0_current)
         self.z0_target = z0_dest
@@ -353,15 +399,15 @@ class Microstrip:
         er_eff = self.epsilon_eff
         if er_eff and self.mur_eff:
             self.params["PHYS_LEN"] = (
-                Microstrip.C0
+                Microstrip._C0
                 / (self.frequency * math.sqrt(er_eff * self.mur_eff))
                 * angl_dest
                 / (2.0 * math.pi)
             )
-        self.Analyse()
+        self.Analyze()
         return error <= m_maxError
 
-    def Analyse(self):
+    def Analyze(self):
         """
         Computes all output properties for the current geometry and material parameters.
 
@@ -381,7 +427,7 @@ class Microstrip:
         """
         if self.z0_target is None:
             if self.params["PHYS_WIDTH"] > 0:
-                self.Analyse()
+                self.Analyze()
             return
         w_guess = self._SynthesizeWidth()
         self.params["PHYS_WIDTH"] = w_guess
