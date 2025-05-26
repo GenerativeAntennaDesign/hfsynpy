@@ -22,9 +22,9 @@ plugins:
             show_type_annotations: true
             merge_init_into_class: true
             filters:
-              - "!^C0$"
-              - "!^MU0$"
-              - "!^ZF0$"
+              - "!^_C0$"
+              - "!^_MU0$"
+              - "!^_ZF0$"
               - "!^Z0_0$"
               - "!^Z0_h_1$"
               - "!^ang_l_target$"
