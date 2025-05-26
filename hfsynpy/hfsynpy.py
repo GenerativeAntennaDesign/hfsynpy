@@ -21,7 +21,6 @@
 # GNU General Public License for more details.
 
 from dataclasses import dataclass, field
-from typing import Optional
 import math
 
 
