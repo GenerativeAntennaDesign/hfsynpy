@@ -21,48 +21,70 @@
 # GNU General Public License for more details.
 
 from dataclasses import dataclass, field
+from typing import Optional
 import math
+
+
+@dataclass
+class MicrostripAnalysisResult:
+    epsilon_eff: float
+    skin_depth: float
+    atten_cond: float
+    atten_diel: float
+    Z0_0: float
+    angle_deg: float = None  # Optional: phase shift in degrees for the given length
+
+
+@dataclass
+class MicrostripSynthesisResult:
+    width: float
+    epsilon_eff: float
+    skin_depth: float
+    atten_cond: float
+    atten_diel: float
+    length: float  # Physical length to reach the target electrical angle (meters)
 
 
 @dataclass
 class Microstrip:
     """
-    **Description**
-
     Microstrip transmission line model for PCB design.
 
     This class models and analyzes microstrip transmission lines, supporting both synthesis (finding trace width for a target impedance) and analysis (computing electrical properties from geometry and material parameters).
 
-    **Parameters**
+    Parameters
+    ----------
+    eps_r : float
+        Relative permittivity (dielectric constant) of the substrate.
+    tand : float
+        Loss tangent of the substrate.
+    h : float
+        Height of the substrate (meters).
+    t : float
+        Thickness of the conductor (meters).
+    rough : float
+        Surface roughness of the conductor (meters).
+    sigma : float
+        Electrical conductivity of the conductor (S/m).
+    mur : float
+        Relative permeability of the substrate.
+    murc : float
+        Relative permeability of the conductor.
+    frequency : float
+        Frequency of operation (Hz).
+    z0_target : float, optional
+        Target characteristic impedance for synthesis (Ohms).
+    ang_l_target : float, optional
+        Target electrical length for synthesis (radians).
+    h_top : float, optional
+        Height to top ground plane (meters, very large for single ground plane).
 
-    | Name         | Type   | Default     | Unit      | Description                                                                 |
-    |--------------|--------|-------------|-----------|-----------------------------------------------------------------------------|
-    | eps_r        | float  | 1.0         | -         | Relative permittivity (dielectric constant) of the substrate.               |
-    | tand         | float  | 0.0         | -         | Loss tangent of the substrate.                                              |
-    | h            | float  | 1e-3        | m         | Height of the substrate.                                                    |
-    | t            | float  | 0.0         | m         | Thickness of the conductor.                                                 |
-    | rough        | float  | 0.0         | m         | Surface roughness of the conductor.                                         |
-    | sigma        | float  | 5.8e7       | S/m       | Electrical conductivity of the conductor.                                   |
-    | mur          | float  | 1.0         | -         | Relative permeability of the substrate.                                     |
-    | murc         | float  | 1.0         | -         | Relative permeability of the conductor.                                     |
-    | frequency    | float  | 1.0         | Hz        | Frequency of operation.                                                     |
-    | z0_target    | float  | None        | Ω         | Target characteristic impedance for synthesis.                              |
-    | ang_l_target | float  | None        | rad       | Target electrical length for synthesis.                                     |
-    | h_top        | float  | 1e20        | m         | Height to top ground plane (very large for single ground plane).            |
-
-    **Output Parameters**
-
-    | Name         | Type   | Unit (output) | Description                                                      |
-    |--------------|--------|---------------|------------------------------------------------------------------|
-    | width        | float  | m             | Synthesized trace width.                                         |
-    | epsilon_eff  | float  | -             | Effective relative permittivity.                                 |
-    | skin_depth   | float  | m             | Skin depth of the conductor at the given frequency.              |
-    | atten_cond   | float  | dB/m          | Conductor attenuation per meter.                                 |
-    | atten_diel   | float  | dB/m          | Dielectric attenuation per meter.                                |
-
-
-
-
+    Usage
+    -----
+    Synthesis:
+        Call `Synthesize()` to compute the required width for a target impedance. Returns a `MicrostripSynthesisResult` dataclass.
+    Analysis:
+        Set the desired width via the `width` property, then call `Analyze()` to compute all properties. Returns a `MicrostripAnalysisResult` dataclass.
     """
 
     # Physical constants
@@ -73,28 +95,17 @@ class Microstrip:
     eps_r: float = 1.0
     tand: float = 0.0
     h: float = 1e-3
-    t: float = 0.0
+    t: float = 35e-6
     rough: float = 0.0
     sigma: float = 5.8e7
     mur: float = 1.0
     murc: float = 1.0
-    frequency: float = 1.0
-    z0_target: float = None
+    frequency: float = 1e9
+    z0_target: float = 50.0
     ang_l_target: float = None
     h_top: float = 1e20
 
     params: dict = field(init=False, default_factory=dict)
-    width: float = field(init=False, default=None)
-    epsilon_eff: float = field(init=False, default=None)
-    skin_depth: float = field(init=False, default=None)
-    atten_cond: float = field(init=False, default=None)
-    atten_diel: float = field(init=False, default=None)
-    prop_delay: float = field(init=False, default=None)
-    Z0_0: float = field(init=False, default=None)
-    er_eff_0: float = field(init=False, default=None)
-    mur_eff: float = field(init=False, default=None)
-    w_eff: float = field(init=False, default=None)
-    Z0_h_1: float = field(init=False, default=None)
 
     def __post_init__(self):
         self.h_top = self.h_top if self.h_top is not None else self.h
@@ -341,8 +352,6 @@ class Microstrip:
             return
         v = Microstrip._C0 / math.sqrt(self.epsilon_eff * self.mur_eff)
         lambda_g = v / self.frequency
-        ang = 2.0 * math.pi * (self.params["PHYS_LEN"] / lambda_g)
-        # If you want to store ang, you can add: self.ang_l_target = ang
 
     def _MinimiseZ0Error1D(self):
         z0_dest = self.z0_target
@@ -388,41 +397,238 @@ class Microstrip:
         self.Analyze()
         return error <= m_maxError
 
-    def Analyze(self):
+    @property
+    def width(self) -> float:
+        """Get or set the physical width (in meters) for analysis."""
+        return self.params["PHYS_WIDTH"]
+
+    @width.setter
+    def width(self, value: float):
+        self.params["PHYS_WIDTH"] = value
+
+    def Analyze(self) -> MicrostripAnalysisResult:
         """
         Computes all output properties for the current geometry and material parameters.
 
-        Use this method to analyze a microstrip with given physical and material parameters and obtain impedance and other properties.
+        Note
+        ----
+        The width used for analysis must be set via the `width` property before calling this method. The returned result object echoes this width for clarity.
+
+        Returns
+        -------
+        MicrostripAnalysisResult
+            Dataclass containing all computed output properties (width is the input value).
         """
         self._mur_eff_ms()
         self._microstrip_Z0()
         self._dispersion()
         self._line_angle()
         self._attenuation()
+        # Compute angle_deg if ANG_L is set
+        angle_deg = None
+        if hasattr(self, "params") and "ANG_L" in self.params and self.params["ANG_L"]:
+            angle_deg = math.degrees(self.params["ANG_L"])
+        return MicrostripAnalysisResult(
+            epsilon_eff=self.epsilon_eff,
+            skin_depth=self.skin_depth,
+            atten_cond=self.atten_cond,
+            atten_diel=self.atten_diel,
+            Z0_0=self.Z0_0,
+            angle_deg=angle_deg,
+        )
 
-    def Synthesize(self):
+    def Synthesize(self) -> MicrostripSynthesisResult:
         """
         Synthesizes the trace width for the target impedance and computes all output properties.
 
-        This method finds the appropriate trace width for a given target impedance (`z0_target`) and updates all relevant electrical properties of the microstrip.
+        Returns
+        -------
+        MicrostripSynthesisResult
+            Dataclass containing all computed output properties after synthesis.
         """
         if self.z0_target is None:
             if self.params["PHYS_WIDTH"] > 0:
-                self.Analyze()
-            return
+                return self.Analyze()
+            raise ValueError("z0_target must be set for synthesis.")
         w_guess = self._SynthesizeWidth()
         self.params["PHYS_WIDTH"] = w_guess
         self.z0_target = self.z0_target
         self._MinimiseZ0Error1D()
         # Store final results
-        self.width = self.params["PHYS_WIDTH"]
-        self.epsilon_eff = self.epsilon_eff
-        self.skin_depth = self.skin_depth
         L = self.params["PHYS_LEN"]
-        if L > 0:
-            self.atten_cond = self.atten_cond / L
-            self.atten_diel = self.atten_diel / L
-        else:
-            self.atten_cond = self.atten_cond
-            self.atten_diel = self.atten_diel
-        self.prop_delay = self.prop_delay
+        # Do NOT divide attenuation by length! Attenuation is already per meter.
+        return MicrostripSynthesisResult(
+            width=self.params["PHYS_WIDTH"],
+            epsilon_eff=self.epsilon_eff,
+            skin_depth=self.skin_depth,
+            atten_cond=self.atten_cond,
+            atten_diel=self.atten_diel,
+            length=L,
+        )
+
+
+def synthesize_microstrip(
+    eps_r: float,
+    tand: float,
+    h: float,
+    t: float,
+    rough: float,
+    sigma: float,
+    mur: float,
+    murc: float,
+    frequency: float,
+    z0_target: float,
+    ang_l_target: float = None,
+    h_top: float = 1e20,
+) -> MicrostripSynthesisResult:
+    """
+    Synthesize the required microstrip width for a target impedance.
+
+    Parameters
+    ----------
+    eps_r : float
+        Relative permittivity (dielectric constant) of the substrate.
+    tand : float
+        Loss tangent of the substrate.
+    h : float
+        Height of the substrate (meters).
+    t : float
+        Thickness of the conductor (meters).
+    rough : float
+        Surface roughness of the conductor (meters).
+    sigma : float
+        Electrical conductivity of the conductor (S/m).
+    mur : float
+        Relative permeability of the substrate.
+    murc : float
+        Relative permeability of the conductor.
+    frequency : float
+        Frequency of operation (Hz).
+    z0_target : float
+        Target characteristic impedance for synthesis (Ohms).
+    ang_l_target : float, optional
+        Target electrical length for synthesis (degrees).
+    h_top : float, optional
+        Height to top ground plane (meters, very large for single ground plane).
+
+    Returns
+    -------
+    MicrostripSynthesisResult
+        Dataclass containing all computed output properties after synthesis.
+    """
+    # Convert angle from degrees to radians if provided
+    if ang_l_target is not None:
+        ang_l_target_rad = math.radians(ang_l_target)
+    else:
+        ang_l_target_rad = None
+    ms = Microstrip(
+        eps_r=eps_r,
+        tand=tand,
+        h=h,
+        t=t,
+        rough=rough,
+        sigma=sigma,
+        mur=mur,
+        murc=murc,
+        frequency=frequency,
+        z0_target=z0_target,
+        ang_l_target=ang_l_target_rad,
+        h_top=h_top,
+    )
+    return ms.Synthesize()
+
+
+def analyze_microstrip(
+    width: float,
+    eps_r: float,
+    tand: float,
+    h: float,
+    t: float,
+    rough: float,
+    sigma: float,
+    mur: float,
+    murc: float,
+    frequency: float,
+    length: float = None,  # Physical length (meters), optional
+    h_top: float = 1e20,
+) -> MicrostripAnalysisResult:
+    """
+    Analyze a microstrip line for given geometry and material parameters.
+
+    Parameters
+    ----------
+    width : float
+        Trace width (meters).
+    eps_r : float
+        Relative permittivity (dielectric constant) of the substrate.
+    tand : float
+        Loss tangent of the substrate.
+    h : float
+        Height of the substrate (meters).
+    t : float
+        Thickness of the conductor (meters).
+    rough : float
+        Surface roughness of the conductor (meters).
+    sigma : float
+        Electrical conductivity of the conductor (S/m).
+    mur : float
+        Relative permeability of the substrate.
+    murc : float
+        Relative permeability of the conductor.
+    frequency : float
+        Frequency of operation (Hz).
+    length : float, optional
+        Physical length of the line (meters). If provided, the electrical angle is calculated and used.
+    h_top : float, optional
+        Height to top ground plane (meters, very large for single ground plane).
+
+    Returns
+    -------
+    MicrostripAnalysisResult
+        Dataclass containing all computed output properties for the given width, including:
+        - epsilon_eff: Effective permittivity
+        - skin_depth: Skin depth (meters)
+        - atten_cond: Conductor attenuation (dB/m)
+        - atten_diel: Dielectric attenuation (dB/m)
+        - Z0_0: Characteristic impedance (ohms)
+        - angle_deg: Phase shift in degrees for the given length (if length is specified, else None)
+    """
+    ang_l_target_rad = None
+    if length is not None:
+        # Calculate the electrical angle from the given length
+        ms_tmp = Microstrip(
+            eps_r=eps_r,
+            tand=tand,
+            h=h,
+            t=t,
+            rough=rough,
+            sigma=sigma,
+            mur=mur,
+            murc=murc,
+            frequency=frequency,
+            h_top=h_top,
+        )
+        ms_tmp.width = width
+        ms_tmp._mur_eff_ms()
+        ms_tmp._microstrip_Z0()
+        ms_tmp._dispersion()
+        er_eff = ms_tmp.epsilon_eff
+        mur_eff = ms_tmp.mur_eff
+        if er_eff and mur_eff:
+            lambda_g = ms_tmp._C0 / (frequency * (er_eff * mur_eff) ** 0.5)
+            ang_l_target_rad = 2 * math.pi * length / lambda_g
+    ms = Microstrip(
+        eps_r=eps_r,
+        tand=tand,
+        h=h,
+        t=t,
+        rough=rough,
+        sigma=sigma,
+        mur=mur,
+        murc=murc,
+        frequency=frequency,
+        ang_l_target=ang_l_target_rad,
+        h_top=h_top,
+    )
+    ms.width = width
+    return ms.Analyze()
