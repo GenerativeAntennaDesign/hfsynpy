@@ -56,19 +56,19 @@
             
             <li class="nav-item" data-bs-level="1"><a href="#hfsynpy" class="nav-link">hfsynpy</a>
               <ul class="nav flex-column">
-            <li class="nav-item" data-bs-level="2"><a href="#overview" class="nav-link">Overview</a>
+            <li class="nav-item" data-bs-level="2"><a href="#functional-api-overview" class="nav-link">Functional API Overview</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-bs-level="2"><a href="#usage-example" class="nav-link">Usage Example</a>
+            <li class="nav-item" data-bs-level="2"><a href="#microstrip-synthesis-and-analysis-example" class="nav-link">Microstrip Synthesis and Analysis Example</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-bs-level="2"><a href="#api-reference" class="nav-link">API Reference</a>
+            <li class="nav-item" data-bs-level="2"><a href="#synthesize_microstrip" class="nav-link">synthesize_microstrip</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-bs-level="2"><a href="#hfsynpy.Microstrip" class="nav-link">Microstrip</a>
+            <li class="nav-item" data-bs-level="2"><a href="#analyze_microstrip" class="nav-link">analyze_microstrip</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -84,60 +84,72 @@
                     <div class="col-md-9" role="main">
 
 <h1 id="hfsynpy">hfsynpy</h1>
-<p>A package in development for high-frequency (HF) synthesis.</p>
-<p>This package will contain multiple classes for the synthesis of commonly used high-frequency (HF) components. Currently, only microstrip synthesis is supported.
-It should produce results identical to KiCad, as the same methods are used. The implemented equations are generally applicable up to 40 GHz; however, use with caution. Always verify results with full-wave simulation tools.</p>
+<p>A Python package for high-frequency (HF) microstrip synthesis and analysis.</p>
+<p>This package provides tools for the synthesis and analysis of microstrip transmission lines, using the same models as KiCad. Results are generally valid up to 40 GHz, but always verify with full-wave simulation tools for critical designs.</p>
 <hr />
-<h2 id="overview">Overview</h2>
-<p>The <code>Microstrip</code> class models and analyzes microstrip transmission lines for PCB design, supporting both synthesis (finding trace width for a target impedance) and analysis (computing electrical properties from geometry and material parameters).</p>
+<h2 id="functional-api-overview">Functional API Overview</h2>
+<p>This package provides two main functions for microstrip design:</p>
+<ul>
+<li><strong>synthesize_microstrip</strong>: Synthesize the required trace width for a target impedance.</li>
+<li><strong>analyze_microstrip</strong>: Analyze the electrical properties for a given trace width.</li>
+</ul>
+<p>Both functions return results as dataclasses for clarity and type safety.</p>
 <hr />
-<h2 id="usage-example">Usage Example</h2>
-<pre><code class="language-python">from hfsynpy import Microstrip
+<h2 id="microstrip-synthesis-and-analysis-example">Microstrip Synthesis and Analysis Example</h2>
+<p>This example demonstrates how to use the functional API of <code>hfsynpy</code> for microstrip synthesis and analysis, including the new features:
+- Input of electrical angle in degrees for synthesis
+- Input of physical length for analysis
+- Output of phase shift (angle) in degrees for a given length
+- All attenuation values are always per meter (dB/m)</p>
+<h3 id="synthesize-microstrip-for-target-impedance-and-angle">Synthesize Microstrip for Target Impedance and Angle</h3>
+<pre><code class="language-python">from hfsynpy import synthesize_microstrip, analyze_microstrip
 
-ms = Microstrip(
+# Synthesize width for target Z0 and electrical angle (degrees)
+syn_result = synthesize_microstrip(
+    eps_r=3.66,        # Relative permittivity
+    tand=0.0037,       # Loss tangent
+    h=1.524e-3,        # Substrate height (1.524 mm)
+    t=35e-6,           # Copper thickness (35 um)
+    rough=0e-6,        # Surface roughness (0 um)
+    sigma=1 / (1.72e-8), # Copper conductivity (5.814e7 S/m)
+    mur=1.0,           # Relative permeability (substrate)
+    murc=1.0,          # Relative permeability (conductor)
+    frequency=2.45e9,  # Frequency (2.45 GHz)
+    z0_target=50.0,    # Target impedance (ohms)
+    ang_l_target=30.0, # Target angle for length synthesis (degrees)
+)
+print(f&quot;Synthesized width: {syn_result.width * 1e3:.4f} mm&quot;)
+print(f&quot;Effective permittivity: {syn_result.epsilon_eff:.4f}&quot;)
+print(f&quot;Skin depth: {syn_result.skin_depth * 1e6:.4f} um&quot;)
+print(f&quot;Conductor attenuation: {syn_result.atten_cond:.4f} dB/m&quot;)
+print(f&quot;Dielectric attenuation: {syn_result.atten_diel:.4f} dB/m&quot;)
+print(f&quot;Physical length: {syn_result.length * 1e3:.4f} mm&quot;)
+</code></pre>
+<h3 id="analyze-microstrip-for-given-width-and-length">Analyze Microstrip for Given Width and Length</h3>
+<pre><code class="language-python">ana_result = analyze_microstrip(
+    width=0.79e-3,     # Trace width (0.79 mm)
     eps_r=3.66,
     tand=0.0037,
-    h=1.507e-3,
+    h=1.524e-3,
     t=35e-6,
     rough=0e-6,
-    sigma=1/(1.72e-8),
+    sigma=1 / (1.72e-8),
     mur=1.0,
     murc=1.0,
-    frequency=10e9,
-    z0_target=50.0
+    frequency=2.45e9,
+    length=50e-3,      # Physical length (50 mm)
 )
-ms.Synthesize()
-print(f&quot;Synthesized width: {ms.width * 1e3:.4f} mm&quot;)
-print(f&quot;Effective permittivity: {ms.epsilon_eff:.4f}&quot;)
-print(f&quot;Skin depth: {ms.skin_depth * 1e6:.4f} um&quot;)
-print(f&quot;Conductor attenuation: {ms.atten_cond:.4f} dB/m&quot;)
-print(f&quot;Dielectric attenuation: {ms.atten_diel:.4f} dB/m&quot;)
+print(f&quot;Characteristic impedance: {ana_result.Z0_0:.4f} ohms&quot;)
+print(f&quot;Effective permittivity: {ana_result.epsilon_eff:.4f}&quot;)
+print(f&quot;Skin depth: {ana_result.skin_depth * 1e6:.4f} um&quot;)
+print(f&quot;Conductor attenuation: {ana_result.atten_cond:.4f} dB/m&quot;)
+print(f&quot;Dielectric attenuation: {ana_result.atten_diel:.4f} dB/m&quot;)
+print(f&quot;Angle shift: {ana_result.angle_deg:.4f} degrees&quot;)
 </code></pre>
 <hr />
-<h2 id="api-reference">API Reference</h2>
-
-
-<div class="doc doc-object doc-class">
-
-
-
-<h2 id="hfsynpy.Microstrip" class="doc doc-heading">
-              <code class="highlight language-python"><span class="n">hfsynpy</span><span class="o">.</span><span class="n">Microstrip</span></code>
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
-  </span>
-
-</h2>
-
-
-    <div class="doc doc-contents first">
-
-
-        <p><strong>Description</strong></p>
-<p>Microstrip transmission line model for PCB design.</p>
-<p>This class models and analyzes microstrip transmission lines, supporting both synthesis (finding trace width for a target impedance) and analysis (computing electrical properties from geometry and material parameters).</p>
-<p><strong>Parameters</strong></p>
+<h2 id="synthesize_microstrip">synthesize_microstrip</h2>
+<p>Synthesize the required microstrip width for a target impedance.</p>
+<h3 id="parameters">Parameters</h3>
 <table>
 <thead>
 <tr>
@@ -152,70 +164,70 @@ print(f&quot;Dielectric attenuation: {ms.atten_diel:.4f} dB/m&quot;)
 <tr>
 <td>eps_r</td>
 <td>float</td>
-<td>1.0</td>
+<td>required</td>
 <td>-</td>
 <td>Relative permittivity (dielectric constant) of the substrate.</td>
 </tr>
 <tr>
 <td>tand</td>
 <td>float</td>
-<td>0.0</td>
+<td>required</td>
 <td>-</td>
 <td>Loss tangent of the substrate.</td>
 </tr>
 <tr>
 <td>h</td>
 <td>float</td>
-<td>1e-3</td>
+<td>required</td>
 <td>m</td>
 <td>Height of the substrate.</td>
 </tr>
 <tr>
 <td>t</td>
 <td>float</td>
-<td>0.0</td>
+<td>required</td>
 <td>m</td>
 <td>Thickness of the conductor.</td>
 </tr>
 <tr>
 <td>rough</td>
 <td>float</td>
-<td>0.0</td>
+<td>required</td>
 <td>m</td>
 <td>Surface roughness of the conductor.</td>
 </tr>
 <tr>
 <td>sigma</td>
 <td>float</td>
-<td>5.8e7</td>
+<td>required</td>
 <td>S/m</td>
 <td>Electrical conductivity of the conductor.</td>
 </tr>
 <tr>
 <td>mur</td>
 <td>float</td>
-<td>1.0</td>
+<td>required</td>
 <td>-</td>
 <td>Relative permeability of the substrate.</td>
 </tr>
 <tr>
 <td>murc</td>
 <td>float</td>
-<td>1.0</td>
+<td>required</td>
 <td>-</td>
 <td>Relative permeability of the conductor.</td>
 </tr>
 <tr>
 <td>frequency</td>
 <td>float</td>
-<td>1.0</td>
+<td>required</td>
 <td>Hz</td>
 <td>Frequency of operation.</td>
 </tr>
 <tr>
 <td>z0_target</td>
 <td>float</td>
-<td>None</td>
+<td>required</td>
 <td>Ω</td>
 <td>Target characteristic impedance for synthesis.</td>
 </tr>
@@ -235,13 +247,14 @@ print(f&quot;Dielectric attenuation: {ms.atten_diel:.4f} dB/m&quot;)
 </tr>
 </tbody>
 </table>
-<p><strong>Output Parameters</strong></p>
+<h3 id="returns">Returns</h3>
+<p>A <code>MicrostripSynthesisResult</code> dataclass:</p>
 <table>
 <thead>
 <tr>
 <th>Name</th>
 <th>Type</th>
-<th>Unit (output)</th>
+<th>Unit</th>
 <th>Description</th>
 </tr>
 </thead>
@@ -262,7 +275,7 @@ print(f&quot;Dielectric attenuation: {ms.atten_diel:.4f} dB/m&quot;)
 <td>skin_depth</td>
 <td>float</td>
 <td>m</td>
-<td>Skin depth of the conductor at the given frequency.</td>
+<td>Skin depth of the conductor.</td>
 </tr>
 <tr>
 <td>atten_cond</td>
@@ -276,73 +289,167 @@ print(f&quot;Dielectric attenuation: {ms.atten_diel:.4f} dB/m&quot;)
 <td>dB/m</td>
 <td>Dielectric attenuation per meter.</td>
 </tr>
+<tr>
+<td>length</td>
+<td>float</td>
+<td>m</td>
+<td>Physical length to reach the target angle.</td>
+</tr>
 </tbody>
 </table>
-
-
-
-
-
-
-
-
-
-
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="hfsynpy.Microstrip.Analyze" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">Analyze</span></code>
-
-</h3>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Computes all output properties for the current geometry and material parameters.</p>
-<p>Use this method to analyze a microstrip with given physical and material parameters and obtain impedance and other properties.</p>
-
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="hfsynpy.Microstrip.Synthesize" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">Synthesize</span></code>
-
-</h3>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Synthesizes the trace width for the target impedance and computes all output properties.</p>
-<p>This method finds the appropriate trace width for a given target impedance (<code>z0_target</code>) and updates all relevant electrical properties of the microstrip.</p>
-
-
-    </div>
-
-</div>
-
-
-
-  </div>
-
-    </div>
-
-</div><h2 id="attribution">Attribution</h2>
+<hr />
+<h2 id="analyze_microstrip">analyze_microstrip</h2>
+<p>Analyze a microstrip line for given geometry and material parameters.</p>
+<h3 id="parameters_1">Parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Unit</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>width</td>
+<td>float</td>
+<td>required</td>
+<td>m</td>
+<td>Trace width.</td>
+</tr>
+<tr>
+<td>eps_r</td>
+<td>float</td>
+<td>required</td>
+<td>-</td>
+<td>Relative permittivity (dielectric constant) of the substrate.</td>
+</tr>
+<tr>
+<td>tand</td>
+<td>float</td>
+<td>required</td>
+<td>-</td>
+<td>Loss tangent of the substrate.</td>
+</tr>
+<tr>
+<td>h</td>
+<td>float</td>
+<td>required</td>
+<td>m</td>
+<td>Height of the substrate.</td>
+</tr>
+<tr>
+<td>t</td>
+<td>float</td>
+<td>required</td>
+<td>m</td>
+<td>Thickness of the conductor.</td>
+</tr>
+<tr>
+<td>rough</td>
+<td>float</td>
+<td>required</td>
+<td>m</td>
+<td>Surface roughness of the conductor.</td>
+</tr>
+<tr>
+<td>sigma</td>
+<td>float</td>
+<td>required</td>
+<td>S/m</td>
+<td>Electrical conductivity of the conductor.</td>
+</tr>
+<tr>
+<td>mur</td>
+<td>float</td>
+<td>required</td>
+<td>-</td>
+<td>Relative permeability of the substrate.</td>
+</tr>
+<tr>
+<td>murc</td>
+<td>float</td>
+<td>required</td>
+<td>-</td>
+<td>Relative permeability of the conductor.</td>
+</tr>
+<tr>
+<td>frequency</td>
+<td>float</td>
+<td>required</td>
+<td>Hz</td>
+<td>Frequency of operation.</td>
+</tr>
+<tr>
+<td>ang_l_target</td>
+<td>float</td>
+<td>None</td>
+<td>rad</td>
+<td>Target electrical length for analysis.</td>
+</tr>
+<tr>
+<td>h_top</td>
+<td>float</td>
+<td>1e20</td>
+<td>m</td>
+<td>Height to top ground plane (very large for single ground plane).</td>
+</tr>
+</tbody>
+</table>
+<h3 id="returns_1">Returns</h3>
+<p>A <code>MicrostripAnalysisResult</code> dataclass:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Unit</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>epsilon_eff</td>
+<td>float</td>
+<td>-</td>
+<td>Effective relative permittivity.</td>
+</tr>
+<tr>
+<td>skin_depth</td>
+<td>float</td>
+<td>m</td>
+<td>Skin depth of the conductor.</td>
+</tr>
+<tr>
+<td>atten_cond</td>
+<td>float</td>
+<td>dB/m</td>
+<td>Conductor attenuation per meter.</td>
+</tr>
+<tr>
+<td>atten_diel</td>
+<td>float</td>
+<td>dB/m</td>
+<td>Dielectric attenuation per meter.</td>
+</tr>
+<tr>
+<td>Z0_0</td>
+<td>float</td>
+<td>Ω</td>
+<td>Characteristic impedance.</td>
+</tr>
+<tr>
+<td>angle_deg</td>
+<td>float</td>
+<td>deg</td>
+<td>Phase shift for the given length.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="attribution">Attribution</h2>
 <p>This package is part of a Python translation of KiCad's C++ source code.</p>
 <p>Original C++ code:
 - © 2001 Gopal Narayanan <a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#103;&#111;&#112;&#97;&#108;&#64;&#97;&#115;&#116;&#114;&#111;&#46;&#117;&#109;&#97;&#115;&#115;&#46;&#101;&#100;&#117;">&#103;&#111;&#112;&#97;&#108;&#64;&#97;&#115;&#116;&#114;&#111;&#46;&#117;&#109;&#97;&#115;&#115;&#46;&#101;&#100;&#117;</a>
@@ -441,5 +548,5 @@ GNU General Public License for more details.</p></div>
 
 <!--
 MkDocs version : 1.6.1
-Build Date UTC : 2025-05-26 13:43:30.897669+00:00
+Build Date UTC : 2025-05-26 15:28:49.268993+00:00
 -->
