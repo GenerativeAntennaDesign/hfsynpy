@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="None">
+        
+        
+        <link rel="shortcut icon" href="img/favicon.ico">
+        <title>hfsynpy Documentation</title>
+        <link href="css/bootstrap.min.css" rel="stylesheet">
+        <link href="css/fontawesome.min.css" rel="stylesheet">
+        <link href="css/brands.min.css" rel="stylesheet">
+        <link href="css/solid.min.css" rel="stylesheet">
+        <link href="css/v4-font-face.min.css" rel="stylesheet">
+        <link href="css/base.css" rel="stylesheet">
+        <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" >
+        <link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" disabled>
+        <link href="assets/_mkdocstrings.css" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script> 
+    </head>
+
+    <body class="homepage">
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href=".">hfsynpy Documentation</a>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+
+                    <ul class="nav navbar-nav ms-md-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-bs-toggle="collapse" data-bs-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-body-tertiary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-bs-level="1"><a href="#microstrip-transmission-line-model" class="nav-link">Microstrip Transmission Line Model</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-bs-level="2"><a href="#overview" class="nav-link">Overview</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#usage-example" class="nav-link">Usage Example</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#api-reference" class="nav-link">API Reference</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#hfsynpy.Microstrip" class="nav-link">Microstrip</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="microstrip-transmission-line-model">Microstrip Transmission Line Model</h1>
+<hr />
+<h2 id="overview">Overview</h2>
+<p>The <code>Microstrip</code> class models and analyzes microstrip transmission lines for PCB design, supporting both synthesis (finding trace width for a target impedance) and analysis (computing electrical properties from geometry and material parameters).</p>
+<hr />
+<h2 id="usage-example">Usage Example</h2>
+<pre><code class="language-python">from hfsynpy import Microstrip
+
+ms = Microstrip(
+    eps_r=3.66,
+    tand=0.0037,
+    h=1.507e-3,
+    t=35e-6,
+    rough=0e-6,
+    sigma=1/(1.72e-8),
+    mur=1.0,
+    murc=1.0,
+    frequency=10e9,
+    z0_target=50.0
+)
+ms.Synthesize()
+print(f&quot;Synthesized width: {ms.width * 1e3:.3f} mm&quot;)
+</code></pre>
+<hr />
+<h2 id="api-reference">API Reference</h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="hfsynpy.Microstrip" class="doc doc-heading">
+              <code class="highlight language-python"><span class="n">hfsynpy</span><span class="o">.</span><span class="n">Microstrip</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+        <p>Microstrip transmission line model for PCB design.</p>
+<p>This class models and analyzes microstrip transmission lines, supporting both synthesis (finding trace width for a target impedance) and analysis (computing electrical properties from geometry and material parameters).</p>
+<p><strong>Parameters</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Unit</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>eps_r</td>
+<td>float</td>
+<td>1.0</td>
+<td>-</td>
+<td>Relative permittivity (dielectric constant) of the substrate.</td>
+</tr>
+<tr>
+<td>tand</td>
+<td>float</td>
+<td>0.0</td>
+<td>-</td>
+<td>Loss tangent of the substrate.</td>
+</tr>
+<tr>
+<td>h</td>
+<td>float</td>
+<td>1e-3</td>
+<td>m</td>
+<td>Height of the substrate.</td>
+</tr>
+<tr>
+<td>t</td>
+<td>float</td>
+<td>0.0</td>
+<td>m</td>
+<td>Thickness of the conductor.</td>
+</tr>
+<tr>
+<td>rough</td>
+<td>float</td>
+<td>0.0</td>
+<td>m</td>
+<td>Surface roughness of the conductor.</td>
+</tr>
+<tr>
+<td>sigma</td>
+<td>float</td>
+<td>5.8e7</td>
+<td>S/m</td>
+<td>Electrical conductivity of the conductor.</td>
+</tr>
+<tr>
+<td>mur</td>
+<td>float</td>
+<td>1.0</td>
+<td>-</td>
+<td>Relative permeability of the substrate.</td>
+</tr>
+<tr>
+<td>murc</td>
+<td>float</td>
+<td>1.0</td>
+<td>-</td>
+<td>Relative permeability of the conductor.</td>
+</tr>
+<tr>
+<td>frequency</td>
+<td>float</td>
+<td>1.0</td>
+<td>Hz</td>
+<td>Frequency of operation.</td>
+</tr>
+<tr>
+<td>z0_target</td>
+<td>float</td>
+<td>None</td>
+<td>Ω</td>
+<td>Target characteristic impedance for synthesis.</td>
+</tr>
+<tr>
+<td>ang_l_target</td>
+<td>float</td>
+<td>None</td>
+<td>rad</td>
+<td>Target electrical length for synthesis.</td>
+</tr>
+<tr>
+<td>h_top</td>
+<td>float</td>
+<td>1e20</td>
+<td>m</td>
+<td>Height to top ground plane (very large for single ground plane).</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Output Parameters</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Unit (output)</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>width</td>
+<td>float</td>
+<td>m</td>
+<td>Synthesized trace width.</td>
+</tr>
+<tr>
+<td>epsilon_eff</td>
+<td>float</td>
+<td>-</td>
+<td>Effective relative permittivity.</td>
+</tr>
+<tr>
+<td>skin_depth</td>
+<td>float</td>
+<td>m</td>
+<td>Skin depth of the conductor at the given frequency.</td>
+</tr>
+<tr>
+<td>atten_cond</td>
+<td>float</td>
+<td>dB/m</td>
+<td>Conductor attenuation per meter.</td>
+</tr>
+<tr>
+<td>atten_diel</td>
+<td>float</td>
+<td>dB/m</td>
+<td>Dielectric attenuation per meter.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Attribution</strong>
+This file is part of a Python translation of KiCad's C++ source code.</p>
+<p>Original C++ code:
+- © 2001 Gopal Narayanan <a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#103;&#111;&#112;&#97;&#108;&#64;&#97;&#115;&#116;&#114;&#111;&#46;&#117;&#109;&#97;&#115;&#115;&#46;&#101;&#100;&#117;">&#103;&#111;&#112;&#97;&#108;&#64;&#97;&#115;&#116;&#114;&#111;&#46;&#117;&#109;&#97;&#115;&#115;&#46;&#101;&#100;&#117;</a>
+- © 2002 Claudio Girardi <a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#99;&#108;&#97;&#117;&#100;&#105;&#111;&#46;&#103;&#105;&#114;&#97;&#114;&#100;&#105;&#64;&#105;&#101;&#101;&#101;&#46;&#111;&#114;&#103;">&#99;&#108;&#97;&#117;&#100;&#105;&#111;&#46;&#103;&#105;&#114;&#97;&#114;&#100;&#105;&#64;&#105;&#101;&#101;&#101;&#46;&#111;&#114;&#103;</a>
+- © 2005, 2006 Stefan Jahn <a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#115;&#116;&#101;&#102;&#97;&#110;&#64;&#108;&#107;&#99;&#99;&#46;&#111;&#114;&#103;">&#115;&#116;&#101;&#102;&#97;&#110;&#64;&#108;&#107;&#99;&#99;&#46;&#111;&#114;&#103;</a>
+- Modified for KiCad: 2018 Jean-Pierre Charras <jp.charras at wanadoo.fr>
+- © The KiCad Developers, see AUTHORS.txt for contributors.</p>
+<p>Python translation and modifications:
+- © 2025 Dominik Mair <a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#100;&#111;&#109;&#105;&#110;&#105;&#107;&#46;&#109;&#97;&#105;&#114;&#64;&#117;&#105;&#98;&#107;&#46;&#97;&#99;&#46;&#97;&#116;">&#100;&#111;&#109;&#105;&#110;&#105;&#107;&#46;&#109;&#97;&#105;&#114;&#64;&#117;&#105;&#98;&#107;&#46;&#97;&#99;&#46;&#97;&#116;</a></p>
+<p>This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.</p>
+<p>This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.</p>
+
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="hfsynpy.Microstrip._C0" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">_C0</span> <span class="o">=</span> <span class="mf">299792458.0</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="hfsynpy.Microstrip._MU0" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">_MU0</span> <span class="o">=</span> <span class="mf">1.2566370614e-06</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="hfsynpy.Microstrip._ZF0" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">_ZF0</span> <span class="o">=</span> <span class="mf">376.730313668</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="hfsynpy.Microstrip.Analyze" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">Analyze</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Computes all output properties for the current geometry and material parameters.</p>
+<p>Use this method to analyze a microstrip with given physical and material parameters and obtain impedance and other properties.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="hfsynpy.Microstrip.Synthesize" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">Synthesize</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Synthesizes the trace width for the target impedance and computes all output properties.</p>
+<p>This method finds the appropriate trace width for a given target impedance (<code>z0_target</code>) and updates all relevant electrical properties of the microstrip.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script src="js/bootstrap.bundle.min.js"></script>
+        <script>
+            var base_url = ".",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="js/base.js"></script>
+        <script src="search/main.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>From here you can search these documents. Enter your search terms below.</p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>
+
+<!--
+MkDocs version : 1.6.1
+Build Date UTC : 2025-05-26 13:15:28.481612+00:00
+-->
