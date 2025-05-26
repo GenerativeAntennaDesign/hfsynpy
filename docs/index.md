@@ -34,22 +34,3 @@ print(f"Synthesized width: {ms.width * 1e3:.3f} mm")
 ## API Reference
 
 ::: hfsynpy.Microstrip
-    options:
-      show_source: false
-      show_signature: false
-      show_root_heading: true
-      show_docstring: true
-      show_bases: false
-      show_inheritance: false
-      show_if_no_docstring: true
-      show_attributes: true
-      show_methods: true
-      show_special_methods: false
-      show_private: false
-      show_type_annotations: true
-      merge_init_into_class: true
-      filters:
-        - "!^_.*$"
-        - "!^(__post_init__|params|w_eff|Z0_0|er_eff_0|mur_eff|Z0_h_1)$"
-      extra:
-        show_docstring_style: table

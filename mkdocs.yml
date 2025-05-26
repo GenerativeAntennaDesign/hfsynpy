@@ -8,17 +8,61 @@ plugins:
         python:
           options:
             show_source: false
-            show_signature: true
+            show_signature: false
+            signature: "hfsynpy.Microstrip()"
             show_root_heading: true
             show_docstring: true
             show_bases: false
             show_inheritance: false
             show_if_no_docstring: true
-            show_attributes: true
+            show_attributes: false
             show_methods: true
             show_special_methods: false
             show_private: false
             show_type_annotations: true
             merge_init_into_class: true
-extra:
-              show_docstring_style: table
+            filters:
+              - "!^C0$"
+              - "!^MU0$"
+              - "!^ZF0$"
+              - "!^Z0_0$"
+              - "!^Z0_h_1$"
+              - "!^ang_l_target$"
+              - "!^atten_cond$"
+              - "!^atten_diel$"
+              - "!^eps_r$"
+              - "!^epsilon_eff$"
+              - "!^er_eff_0$"
+              - "!^frequency$"
+              - "!^h$"
+              - "!^h_top$"
+              - "!^mur$"
+              - "!^mur_eff$"
+              - "!^murc$"
+              - "!^params$"
+              - "!^prop_delay$"
+              - "!^rough$"
+              - "!^sigma$"
+              - "!^skin_depth$"
+              - "!^t$"
+              - "!^tand$"
+              - "!^w_eff$"
+              - "!^width$"
+              - "!^z0_target$"
+              - "!^_filling_factor$"
+              - "!^_delta_q_cover$"
+              - "!^_delta_q_thickness$"
+              - "!^_delta_u_thickness$"
+              - "!^_e_r_effective$"
+              - "!^_Z0_homogeneous$"
+              - "!^_e_r_dispersion$"
+              - "!^_Z0_dispersion$"
+              - "!^_SynthesizeWidth$"
+              - "!^_mur_eff_ms$"
+              - "!^_microstrip_Z0$"
+              - "!^_dispersion$"
+              - "!^_attenuation$"
+              - "!^_line_angle$"
+              - "!^_MinimiseZ0Error1D()$"
+              - "!^__post_init__()$"
+

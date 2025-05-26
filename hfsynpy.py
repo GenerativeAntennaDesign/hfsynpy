@@ -11,20 +11,30 @@ class Microstrip:
 
     **Parameters**
 
-    | Name         | Type   | Default     | Description                                                                 |
-    |--------------|--------|-------------|-----------------------------------------------------------------------------|
-    | eps_r        | float  | 1.0         | Relative permittivity (dielectric constant) of the substrate.               |
-    | tand         | float  | 0.0         | Loss tangent of the substrate.                                              |
-    | h            | float  | 1e-3        | Height of the substrate (meters).                                           |
-    | t            | float  | 0.0         | Thickness of the conductor (meters).                                        |
-    | rough        | float  | 0.0         | Surface roughness of the conductor (meters).                                |
-    | sigma        | float  | 5.8e7       | Electrical conductivity of the conductor (S/m).                             |
-    | mur          | float  | 1.0         | Relative permeability of the substrate.                                     |
-    | murc         | float  | 1.0         | Relative permeability of the conductor.                                     |
-    | frequency    | float  | 1.0         | Frequency of operation (Hz).                                                |
-    | z0_target    | float  | None        | Target characteristic impedance (ohms) for synthesis.                       |
-    | ang_l_target | float  | None        | Target electrical length (radians) for synthesis.                           |
-    | h_top        | float  | 1e20        | Height to top ground plane (meters, very large for single ground plane).    |
+    | Name         | Type   | Default     | Unit      | Description                                                                 |
+    |--------------|--------|-------------|-----------|-----------------------------------------------------------------------------|
+    | eps_r        | float  | 1.0         | -         | Relative permittivity (dielectric constant) of the substrate.               |
+    | tand         | float  | 0.0         | -         | Loss tangent of the substrate.                                              |
+    | h            | float  | 1e-3        | m         | Height of the substrate.                                                    |
+    | t            | float  | 0.0         | m         | Thickness of the conductor.                                                 |
+    | rough        | float  | 0.0         | m         | Surface roughness of the conductor.                                         |
+    | sigma        | float  | 5.8e7       | S/m       | Electrical conductivity of the conductor.                                   |
+    | mur          | float  | 1.0         | -         | Relative permeability of the substrate.                                     |
+    | murc         | float  | 1.0         | -         | Relative permeability of the conductor.                                     |
+    | frequency    | float  | 1.0         | Hz        | Frequency of operation.                                                     |
+    | z0_target    | float  | None        | Ω         | Target characteristic impedance for synthesis.                              |
+    | ang_l_target | float  | None        | rad       | Target electrical length for synthesis.                                     |
+    | h_top        | float  | 1e20        | m         | Height to top ground plane (very large for single ground plane).            |
+
+    **Output Parameters**
+
+    | Name         | Type   | Unit (output) | Description                                                      |
+    |--------------|--------|---------------|------------------------------------------------------------------|
+    | width        | float  | m             | Synthesized trace width.                                         |
+    | epsilon_eff  | float  | -             | Effective relative permittivity.                                 |
+    | skin_depth   | float  | m             | Skin depth of the conductor at the given frequency.              |
+    | atten_cond   | float  | dB/m          | Conductor attenuation per meter.                                 |
+    | atten_diel   | float  | dB/m          | Dielectric attenuation per meter.                                |
 
     """
 
@@ -261,17 +271,25 @@ class Microstrip:
             )
         else:
             depth = 0.0
-        self.skin_depth = depth * 1e6  # convert to μm
+        self.skin_depth = depth  # keep in meters
 
-        # Conductor losses (dB/m)
+        # Conductor losses (dB/m) -- C++ style
         Z0_h_1 = self.Z0_h_1
-        Rs = 1.0 / (self.sigma * depth) if depth > 0 else float("inf")
-        Rs *= 1.0 + (2.0 / math.pi) * math.atan(1.40 * pow(self.rough / depth, 2.0))
+        e_r_eff_0 = self.er_eff_0
+        width = self.params["PHYS_WIDTH"]
+        freq = self.frequency
+        delta = depth  # skin depth
+        Rs = 1.0 / (self.sigma * delta) if delta > 0 else float("inf")
+        Rs *= 1.0 + (2.0 / math.pi) * math.atan(1.40 * pow(self.rough / delta, 2.0))
         K = math.exp(-1.2 * pow(Z0_h_1 / self.ZF0, 0.7))
-        Rs2 = Rs * K
-        Rs3 = Rs * (1.0 - K)
-        if self.params["PHYS_WIDTH"] > 0 and Z0_h_1 > 0:
-            alpha_c = ((Rs2 + Rs3) / (self.params["PHYS_WIDTH"] * Z0_h_1)) * 8.686
+        if freq > 0 and width > 0 and Z0_h_1 > 0:
+            Q_c = (math.pi * Z0_h_1 * width * freq) / (Rs * self.C0 * K)
+            alpha_c = (
+                (20.0 * math.pi / math.log(10.0))
+                * freq
+                * math.sqrt(e_r_eff_0)
+                / (self.C0 * Q_c)
+            )
         else:
             alpha_c = 0.0
         self.atten_cond = alpha_c
