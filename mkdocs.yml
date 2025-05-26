@@ -1,0 +1,24 @@
+site_name: hfsynpy Documentation
+nav:
+  - Home: index.md
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: false
+            show_signature: true
+            show_root_heading: true
+            show_docstring: true
+            show_bases: false
+            show_inheritance: false
+            show_if_no_docstring: true
+            show_attributes: true
+            show_methods: true
+            show_special_methods: false
+            show_private: false
+            show_type_annotations: true
+            merge_init_into_class: true
+extra:
+              show_docstring_style: table
