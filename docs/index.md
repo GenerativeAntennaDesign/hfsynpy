@@ -43,24 +43,24 @@ print(f"Dielectric attenuation: {ms.atten_diel:.4f} dB/m")
 
 ## Attribution
 
-    This package is part of a Python translation of KiCad's C++ source code.
+This package is part of a Python translation of KiCad's C++ source code.
 
-    Original C++ code:
-    - © 2001 Gopal Narayanan <gopal@astro.umass.edu>
-    - © 2002 Claudio Girardi <claudio.girardi@ieee.org>
-    - © 2005, 2006 Stefan Jahn <stefan@lkcc.org>
-    - Modified for KiCad: 2018 Jean-Pierre Charras <jp.charras at wanadoo.fr>
-    - © The KiCad Developers, see AUTHORS.txt for contributors.
+Original C++ code:
+- © 2001 Gopal Narayanan <gopal@astro.umass.edu>
+- © 2002 Claudio Girardi <claudio.girardi@ieee.org>
+- © 2005, 2006 Stefan Jahn <stefan@lkcc.org>
+- Modified for KiCad: 2018 Jean-Pierre Charras <jp.charras at wanadoo.fr>
+- © The KiCad Developers, see AUTHORS.txt for contributors.
 
-    Python translation and modifications:
-    - © 2025 Dominik Mair <dominik.mair@uibk.ac.at>
+Python translation and modifications:
+- © 2025 Dominik Mair <dominik.mair@uibk.ac.at>
 
-    This program is free software; you can redistribute it and/or
-    modify it under the terms of the GNU General Public License
-    as published by the Free Software Foundation; either version 2
-    of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
