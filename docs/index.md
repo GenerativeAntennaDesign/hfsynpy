@@ -1,4 +1,6 @@
-# hfsynpy – A package in development for high-frequency (HF) synthesis
+# hfsynpy 
+
+A package in development for high-frequency (HF) synthesis.
 
 This package will contain multiple classes for the synthesis of commonly used high-frequency (HF) components. Currently, only microstrip synthesis is supported.
 It should produce results identical to KiCad, as the same methods are used. The implemented equations are generally applicable up to 40 GHz; however, use with caution. Always verify results with full-wave simulation tools.
