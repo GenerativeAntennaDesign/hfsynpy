@@ -26,7 +26,11 @@ ms = Microstrip(
     z0_target=50.0
 )
 ms.Synthesize()
-print(f"Synthesized width: {ms.width * 1e3:.3f} mm")
+print(f"Synthesized width: {ms.width * 1e3:.4f} mm")
+print(f"Effective permittivity: {ms.epsilon_eff:.4f}")
+print(f"Skin depth: {ms.skin_depth * 1e6:.4f} um")
+print(f"Conductor attenuation: {ms.atten_cond:.4f} dB/m")
+print(f"Dielectric attenuation: {ms.atten_diel:.4f} dB/m")
 ```
 
 ---
