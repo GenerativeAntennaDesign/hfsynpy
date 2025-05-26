@@ -100,7 +100,11 @@ ms = Microstrip(
     z0_target=50.0
 )
 ms.Synthesize()
-print(f&quot;Synthesized width: {ms.width * 1e3:.3f} mm&quot;)
+print(f&quot;Synthesized width: {ms.width * 1e3:.4f} mm&quot;)
+print(f&quot;Effective permittivity: {ms.epsilon_eff:.4f}&quot;)
+print(f&quot;Skin depth: {ms.skin_depth * 1e6:.4f} um&quot;)
+print(f&quot;Conductor attenuation: {ms.atten_cond:.4f} dB/m&quot;)
+print(f&quot;Dielectric attenuation: {ms.atten_diel:.4f} dB/m&quot;)
 </code></pre>
 <hr />
 <h2 id="api-reference">API Reference</h2>
@@ -431,5 +435,5 @@ Microstrip transmission line model for PCB design.</p>
 
 <!--
 MkDocs version : 1.6.1
-Build Date UTC : 2025-05-26 13:23:57.273537+00:00
+Build Date UTC : 2025-05-26 13:26:35.902499+00:00
 -->
